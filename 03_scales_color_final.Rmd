@@ -1,0 +1,206 @@
+---
+title: "Practicing Color Scales"
+author: "Angela Zoss"
+date: "10/24/2019"
+output: html_document
+---
+
+## Load packages
+
+```{r}
+
+library(tidyverse)
+
+```
+
+## Bob Ross dataset
+
+### Load data
+
+```{r, message=FALSE}
+
+# Data from: https://github.com/fivethirtyeight/data/tree/master/bob-ross
+
+bob_ross <- read_csv("data/elements-by-episode.csv") %>%
+  gather(key="tag",value="true/false", -EPISODE, -TITLE) %>%
+  dplyr::filter(`true/false` == 1) %>%
+  dplyr::select(-`true/false`) %>%
+  rename("id" = "EPISODE", "title" = "TITLE") %>%
+  mutate(id_temp = str_remove(str_replace(id,"E",","),"S")) %>%
+  separate(id_temp, c("season","episode"))
+
+```
+
+### Practice Color for Categories
+
+```{r}
+
+# In the last file, we created a stacked bar chart with tags mapped to color.
+
+selected_tags <- c("BARN","BUSHES","CLOUDS","MOUNTAIN","OCEAN")
+
+bob_ross_sel <- bob_ross %>% dplyr::filter(tag %in% selected_tags)
+
+ggplot(bob_ross_sel, aes(x=season, fill=tag)) +
+  geom_bar()
+
+```
+
+```{r}
+
+# If we don't like the default colors in the plot, we can change them.
+# Like changing axis properties like breaks and labels, we can 
+# change the colors used for the fill and color aesthetics using scales.
+
+# Review https://ggplot2.tidyverse.org/reference/scale_hue.html
+
+# First, we could just adjust how much of the rainbow we use.
+# We can set the "h" property to a range of values between 0 and 360.
+
+# Add a fill scale, and set the "h" property to a range that startes
+# higher than 0 and/or lower than 360.
+
+ggplot(bob_ross_sel, aes(x=season, fill=tag)) +
+  geom_bar() +
+  scale_fill_hue(h = c(180,360))
+
+```
+
+```{r}
+
+# There are also several built-in scales that transform color. You have to be
+# careful to pick the one that matches the data type, either discrete or
+# continuous. In this case, we have discrete data - the tags.
+
+# There are a few built-in color scales for discrete data.
+# - https://ggplot2.tidyverse.org/reference/scale_grey.html
+# - https://ggplot2.tidyverse.org/reference/scale_viridis.html
+# - https://ggplot2.tidyverse.org/reference/scale_brewer.html
+
+# Try out the grey scale.
+
+ggplot(bob_ross_sel, aes(x=season, fill=tag)) +
+  geom_bar() +
+  scale_fill_grey()
+
+# Try out the viridis_d scale. (The "d" stands for discrete.)
+
+ggplot(bob_ross_sel, aes(x=season, fill=tag)) +
+  geom_bar() +
+  scale_fill_viridis_d()
+
+# Try out the brewer scale.
+
+ggplot(bob_ross_sel, aes(x=season, fill=tag)) +
+  geom_bar() +
+  scale_fill_brewer()
+
+# The brewer scale is based on http://colorbrewer2.org, which has a series
+# of pre-built palettes.
+# Review the brewer scale documentation (link above).
+# Select an alternative palette. Look for the "Qualitative" palettes.
+
+ggplot(bob_ross_sel, aes(x=season, fill=tag)) +
+  geom_bar() +
+  scale_fill_brewer(palette="Set1")
+
+```
+
+```{r}
+
+# The final method for changing colors is to set them manually.
+# Review https://ggplot2.tidyverse.org/reference/scale_manual.html
+
+# To assign specific colors to each category, you can make a list of color names
+# or color specifications using the rgb() function.
+
+# To print a list of all valid color names in R, use colors()
+
+# First, build a list of five color names to use in the plot.
+
+colors <- c("brown","darkolivegreen","lightskyblue","black","slateblue")
+
+# Next, add a manual fill scale to the chart and set the values to
+# your new colors vector.
+
+ggplot(bob_ross_sel, aes(x=season, fill=tag)) +
+  geom_bar() +
+  scale_fill_manual(values=colors)
+
+```
+
+## Movies Dataset
+
+### Load data
+
+```{r, message=FALSE}
+
+# data from https://github.com/fivethirtyeight/data/tree/master/bechdel
+
+movies <- read_csv("data/movies.csv", na="#N/A") 
+
+```
+
+```{r}
+
+# In the first file, we created a heatmap to compare domestic gross and
+# international gross.
+
+ggplot(movies,
+       aes(x=`intgross_2013$`, y=`domgross_2013$`)) +
+  geom_bin2d()
+
+
+```
+
+### Practice Color for Numbers
+
+```{r}
+
+# In this plot, the count variable calculated by geom_bin2d gets mapped to a color.
+# Count is a number, or a "continuous" variable for ggplot2.
+
+# There are a few built-in color scales for continuous data.
+# - https://ggplot2.tidyverse.org/reference/scale_gradient.html
+# - https://ggplot2.tidyverse.org/reference/scale_viridis.html
+# - https://ggplot2.tidyverse.org/reference/scale_brewer.html
+
+# Try out the gradient scale. Set a different color for "low" and "high".
+
+ggplot(movies,
+       aes(x=`intgross_2013$`, y=`domgross_2013$`)) +
+  geom_bin2d() +
+  scale_fill_gradient(low="red", high="yellow")
+
+# Try out the viridis_c scale. (The "c" stands for continuous.)
+
+ggplot(movies,
+       aes(x=`intgross_2013$`, y=`domgross_2013$`)) +
+  geom_bin2d() +
+  scale_fill_viridis_c()
+
+# Try out the distiller scale. 
+
+ggplot(movies,
+       aes(x=`intgross_2013$`, y=`domgross_2013$`)) +
+  geom_bin2d() +
+  scale_fill_distiller()
+
+# This is like the brewer scale, but it's designed for continuous data.
+# Review the documentation, and select a "Sequential" palette.
+
+ggplot(movies,
+       aes(x=`intgross_2013$`, y=`domgross_2013$`)) +
+  geom_bin2d() +
+  scale_fill_distiller(palette="Reds")
+
+# Tip: you can reverse the palette by setting direction to 1.
+
+ggplot(movies,
+       aes(x=`intgross_2013$`, y=`domgross_2013$`)) +
+  geom_bin2d() +
+  scale_fill_distiller(palette="Reds", direction=1)
+
+
+```
+

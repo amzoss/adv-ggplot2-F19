@@ -1,0 +1,213 @@
+---
+title: "Practicing Labels and Scales"
+author: "Angela Zoss"
+date: "10/24/2019"
+output: html_document
+---
+
+## Load packages
+
+```{r}
+
+library(tidyverse)
+
+```
+
+## Movies Dataset
+
+### Load data
+
+```{r, message=FALSE}
+
+# data from https://github.com/fivethirtyeight/data/tree/master/bechdel
+
+movies <- read_csv("data/movies.csv", na="#N/A") 
+
+movies_budget_year_test <- movies %>%
+  group_by(year, binary) %>%
+  summarize(avg_budget=mean(`budget_2013$`))
+
+```
+
+
+```{r}
+
+# In the last file, we created a line chart to show average budget  
+# over time for movies that did and did not pass the Bechdel test.
+
+ggplot(movies_budget_year_test,
+       aes(x=year,y=avg_budget, color=binary)) +
+  geom_line()
+
+```
+
+### Practice Labels
+
+```{r}
+
+# To improve this plot so it is a bit more ready for publication, we're going to add
+# a layer called labs(), which allows us to edit labels on the chart like the 
+# main title, axis titles, and legend titles.
+
+# Review:
+# https://ggplot2.tidyverse.org/reference/labs.html
+
+# Update the previous chart to add labels for the following chart elements and aesthetics:
+# title, x, y, color
+
+
+```
+
+### Practice Scales, Part 1
+
+```{r}
+
+# Labels only get us so far. For the text inside the chart elements like
+# the axes and the legends, we have to use layers called "scales".
+
+# Picking the right name of the scale can be tricky. There are three main
+# components of the scale name:
+# 1. the word "scale"
+# 2. the name of the aesthetic you want to modify (e.g., "x", "y", "size", "fill")
+# 3. the data type (either "discrete" or "continuous") or a specific pre-defined
+#    transformation
+
+# In the above plot, we probably want to edit the y axis labels to make them
+# a bit more readable. For that, we would build a scale to edit the y axis,
+# which is mapped to a continuous variable.
+# 1. "scale"
+# 2. "y"
+# 3. "continuous
+
+# Review the scale documentation: 
+# https://ggplot2.tidyverse.org/reference/scale_continuous.html
+
+# First, add the scale as a new layer, separating each part with "_".
+
+
+
+# Next, look in the documentation for something that will change the
+# text that shows up on the axis.
+
+# Now, inside the scale, set the property you found equal to a list
+# of the text you want to use instead.
+
+
+
+```
+
+```{r}
+
+# Notice that in the documentation it says you can set the labels equal
+# to either a list of strings or a function that will automatically generate
+# the labels. Using a function means each number can be transformed
+# automatically, which can save you some time typing out the exact values.
+
+# Using a function in places like this is often called using an
+# "anonymous" function. You use the same syntax that you would if you were
+# defining a function, but you don't assign the function to anything.
+
+# Example: function(x) do_something_with(x)
+
+# Now, you could transform these numbers many ways. For example, you could
+# have all of the zeroes displayed, separated by commas. A good function for
+# that is called format(). 
+# For example: format(25000000, scientific= FALSE, big.mark=",")
+
+# Set the labels equal to an anonymous function that uses the format() 
+# function above.
+
+
+
+```
+
+```{r}
+# Even better would be a function that removes the zeroes entirely and adds something
+# like the letter "M". The function paste0() will combine text together into
+# a single string. To get 25, instead of 25,000,000, you can just divide by 1,000,000.
+# Example: paste0(25000000/1000000, "M")
+
+# Use paste0 and simple math to simplify the labels.
+
+
+
+```
+
+
+```{r}
+
+# One final tip: if you want to use this function over and over again, it would be
+# great to save it with a name. To use it in a scale, however, it has to be either
+# an anonymous function (no name) or a function that takes no arguments.
+
+# That is, we can either say labels=function(x) do_something_with(x) or
+# labels=my_function(), but we can't say labels=my_function(x) because
+# we never said what x is. R will see x as a variable, not a placeholder.
+
+# Long story short, we can take exactly the same function we had above and 
+# just wrap it in a function without arguments and it will magically work.
+# function() { function(x) do_something_with(x)}
+
+million_dollar_labels <- function() {
+  function(x) paste0(x/1000000, "M")
+}
+
+# Use the named function inside the scale to set the labels
+
+
+
+```
+
+### Practice Scales, Part 2
+
+```{r}
+
+# In the last file, we created a simple boxplot.
+
+ggplot(movies,
+       aes(y=`domgross_2013$`)) +
+  geom_boxplot()
+
+```
+
+```{r}
+
+# This boxplot has no variable mapping for the x axis aesthetic, so ggplot2
+# simply places the data at 0 and picks a width for the box. The width is arbitrary
+# though, and the numbers on the x axis are not meaningful.
+
+# Use a scale to leave just a single label on the x axis - the one right at 0.
+
+# Hint: review https://ggplot2.tidyverse.org/reference/scale_continuous.html
+# Look for something that changes what divisions there are on an axis.
+# Also, remember the formula for the name of the scale.
+
+
+
+# Now with the same scale layer, update the label on this tick mark. You can 
+# have it say anything you want.
+
+
+
+# Now try the chart again, but remove all of the tick marks.
+# (Hint: you need to use NULL.)
+
+
+
+
+```
+
+```{r}
+
+# Now, add a scale to edit the labels on the y axis.
+# Bonus: create a new formatting function for billions instead
+# of millions.
+
+billion_dollar_labels <- function() {
+  
+}
+
+
+
+```
+

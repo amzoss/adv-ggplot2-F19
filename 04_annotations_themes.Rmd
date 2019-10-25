@@ -1,0 +1,253 @@
+---
+title: "Practicing Annotations and Themes"
+author: "Angela Zoss"
+date: "10/24/2019"
+output: html_document
+---
+
+## Load packages
+
+```{r}
+
+library(tidyverse)
+
+```
+
+## Movies Dataset
+
+### Load data
+
+```{r, message=FALSE}
+
+# data from https://github.com/fivethirtyeight/data/tree/master/bechdel
+
+movies <- read_csv("data/movies.csv", na="#N/A") 
+
+movies_budget_year_test <- movies %>%
+  group_by(year, binary) %>%
+  summarize(avg_budget=mean(`budget_2013$`))
+
+```
+
+```{r}
+
+# In the first file, we created a heatmap to compare domestic gross and
+# international gross.
+
+ggplot(movies,
+       aes(x=`intgross_2013$`, y=`domgross_2013$`)) +
+  geom_bin2d()
+
+```
+
+```{r}
+
+# Later, we added color. We can also use a custom function to reformat
+# the labels on the x and y axes.
+
+billion_dollar_labels <- function() {
+  function(x) paste0(format(x/1e9,digits=2),"B")
+}
+
+ggplot(movies,
+       aes(x=`intgross_2013$`, y=`domgross_2013$`)) +
+  geom_bin2d() +
+  scale_fill_viridis_c() +
+  scale_x_continuous(labels=billion_dollar_labels()) +
+  scale_y_continuous(labels=billion_dollar_labels())
+
+```
+
+### Practice Annotations
+
+```{r}
+
+# An annotation is a way of manually adding text or shapes to a chart.
+# Annotations are a great way of drawing attention to something specific.
+
+# In the heatmap, there is a bin in the upper-right corner, far
+# away from the other data points. Looking at the data frame,
+# we see that this is the movie "Titanic."
+
+# Let's draw an arrow to that box and add some text that tells the name
+# of the movie.
+
+# Review the documentation on annotation layers:
+# https://ggplot2.tidyverse.org/reference/annotate.html
+
+# For the arrow, we will add a "segment" annotation, which is a line.
+# Segments need two points - a start and an end point. Each point
+# has an x and a y - x, y, xend, and yend.
+
+# Add a segment that starts in the middle of the blank space and ends right
+# near the "Titanic" bin. Just guess on the coordinates until it
+# looks about right.
+
+
+
+# Segments can have arrowheads. The documentation isn't great, but here's
+# some code that will add the arrowhead on the end.
+# arrow=arrow(type="closed", length=unit(.03,"native"))
+
+# Add the arrowhead to the segment.
+
+
+
+# Finally, add a text annotation. Text annotations just need x,
+# y, and a label. Pick an x and a y near the start of the arrow.
+
+
+
+```
+
+### Practice Reference Lines
+
+```{r}
+
+# In the first file, we created a line chart to show average budget  
+# over time for movies that did and did not pass the Bechdel test.
+
+ggplot(movies_budget_year_test,
+       aes(x=year,y=avg_budget, color=binary)) +
+  geom_line()
+
+```
+
+```{r}
+
+# Later, we added titles and created a function to reformat the y axis labels.
+
+million_dollar_labels <- function() {
+  function(x) paste0(x/1000000, "M")
+}
+
+ggplot(movies_budget_year_test,
+       aes(x=year,y=avg_budget, color=binary)) +
+  geom_line() +
+  labs(title="Average Budget Over Time, By Bechdel Test Results",
+       x="Year",
+       y="Average Budget, in 2013$",
+       color="Bechdel Test Results") +
+  scale_y_continuous(labels=million_dollar_labels())
+
+```
+
+```{r}
+
+# Annotations are great for adding arbitrary elements to charts. When
+# we want to add something related to the data, however, we can go back to
+# using good old geoms.
+
+# There are three geoms that work like annotations: geom_hline, geom_vline,
+# and geom_abline. They are called reference lines. They add horizontal,
+# vertical, and sloped lines (respectively).
+
+# One good reason to use a reference line is to show an average. We can
+# add average lines to our movies line chart, one for each color. These
+# will be horizontal lines, intersecting the y axis at the average
+# for each color.
+
+# Start with the above chart, then add a geom_hline().
+# Change the dataset for the new geom to use the full movies dataset.
+# Group by the binary column and then calculate the average budget.
+# Map the aesthetics for yintercept and color.
+
+ggplot(movies_budget_year_test,
+       aes(x=year,y=avg_budget, color=binary)) +
+  geom_line() +
+  labs(title="Average Budget Over Time, By Bechdel Test Results",
+       x="Year",
+       y="Average Budget, in 2013$",
+       color="Bechdel Test Results") +
+  scale_y_continuous(labels=million_dollar_labels()) +
+  geom_hline(data=movies %>% 
+               group_by(binary) %>% 
+               summarize(avg_budget=mean(`budget_2013$`)), 
+             aes(yintercept=avg_budget, color=binary))
+
+```
+
+### Practice Themes
+
+```{r}
+
+# The theme in ggplot2 determines things like the color of the plot
+# background, the font size and family, the style of the gridlines, etc.
+
+# ggplot2 comes with several built-in themes.
+# Review: https://ggplot2.tidyverse.org/reference/ggtheme.html
+
+# Start with the above line chart. Change to a different
+# built-in theme from the reference page.
+
+
+
+```
+
+```{r}
+
+# The built-in themes have some properties you can set inside the function
+# itself. The primary ones are base_size, which can increase or
+# decrease font size across the chart, and base_family, which can change the 
+# font family across the chart.
+
+# Play with base_size and base_family in your new theme.
+
+
+
+```
+
+```{r}
+
+# To fully customize the look and feel of your chart, you can look for
+# specific theme elements and update their value using the generic 
+# theme() function.
+
+# Review https://ggplot2.tidyverse.org/reference/theme.html
+
+# Start with the basic line chart, with no additional theme modifications.
+# Pick a theme element from the reference page to edit.
+# Suggestion: panel.background. (Edit fill, maybe also color.)
+# Note in the documentation what element function you have to
+# use for that panel.background.
+
+
+
+# If you have to modify the theme for multiple charts, it may help
+# to store the results of the theme function as a name you can
+# call over and over again.
+
+custom_theme <- theme()
+
+
+```
+
+```{r}
+
+# Even better than adding a custom theme layer to each chart, however,
+# would be for each chart to use the custom theme automatically.
+
+# You can accomplish this a few different ways. You can either make
+# small modifications to a theme using theme_update(), or you can 
+# replace the default theme entirely with theme_set().
+
+# Updating a theme can be scary. If you're worried about losing your
+# old theme, you can save the results of the _update or _set function.
+# These functions actually return the old theme, while they're changing
+# the current one.
+
+# Update the default theme, changing the panel background color.
+
+old <- theme_update() 
+
+# Now, use plot code that doesn't have any additional theme modifications.
+
+
+
+
+# If you like, return the theme back to the old theme with theme_set() 
+
+theme_set(old)
+
+```
+
